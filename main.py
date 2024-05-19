@@ -209,88 +209,106 @@
 # print(f"Predictions for '{example_symptoms}':")
 # for disease, probability in predictions:
 #     print(f"{disease}: {probability:.4f}")
-import pandas as pd
-from sklearn.model_selection import train_test_split, StratifiedKFold, GridSearchCV
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.pipeline import Pipeline
-from sklearn.metrics import accuracy_score
-
-from flask import Flask, request, jsonify
-app = Flask(__name__)
-
-df = pd.read_csv("dataset.csv")
 
 
-symptom_columns = [f'Symptom_{i}' for i in range(1, 18)]
-df['All_Symptoms'] = df[symptom_columns].fillna('').apply(lambda row: ' '.join(row).strip(), axis=1).str.replace('_',' ')
 
 
-df.drop_duplicates(subset=['All_Symptoms', 'Disease'], inplace=True)
+# import pandas as pd
+# from sklearn.model_selection import train_test_split, StratifiedKFold, GridSearchCV
+# from sklearn.feature_extraction.text import TfidfVectorizer
+# from sklearn.ensemble import RandomForestClassifier
+# from sklearn.pipeline import Pipeline
+# from sklearn.metrics import accuracy_score
+
+# from flask import Flask, request, jsonify
+# app = Flask(__name__)
+
+# df = pd.read_csv("dataset.csv")
 
 
-x = df['All_Symptoms']
-y = df['Disease']
+# symptom_columns = [f'Symptom_{i}' for i in range(1, 18)]
+# df['All_Symptoms'] = df[symptom_columns].fillna('').apply(lambda row: ' '.join(row).strip(), axis=1).str.replace('_',' ')
 
 
-x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42, stratify=y)
+# df.drop_duplicates(subset=['All_Symptoms', 'Disease'], inplace=True)
 
 
-pipeline = Pipeline([
-    ('vectorizer', TfidfVectorizer()),
-    ('classifier', RandomForestClassifier())
-])
+# x = df['All_Symptoms']
+# y = df['Disease']
 
 
-param_grid = {
-    'vectorizer__ngram_range': [(1, 1), (1, 2)],
-    'classifier__n_estimators': [50, 100, 200],
-    'classifier__max_depth': [None, 10, 20, 30]
-}
+# x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42, stratify=y)
 
 
-cv = StratifiedKFold(n_splits=3)
+# pipeline = Pipeline([
+#     ('vectorizer', TfidfVectorizer()),
+#     ('classifier', RandomForestClassifier())
+# ])
 
 
-grid_search = GridSearchCV(pipeline, param_grid, cv=cv, scoring='accuracy')
-grid_search.fit(x_train, y_train)
+# param_grid = {
+#     'vectorizer__ngram_range': [(1, 1), (1, 2)],
+#     'classifier__n_estimators': [50, 100, 200],
+#     'classifier__max_depth': [None, 10, 20, 30]
+# }
 
 
-best_pipeline = grid_search.best_estimator_
+# cv = StratifiedKFold(n_splits=3)
 
 
-y_pred_train = best_pipeline.predict(x_train)
-y_pred_test = best_pipeline.predict(x_test)
-
-print(f"Training accuracy: {accuracy_score(y_train, y_pred_train)}")
-print(f"Testing accuracy: {accuracy_score(y_test, y_pred_test)}")
+# grid_search = GridSearchCV(pipeline, param_grid, cv=cv, scoring='accuracy')
+# grid_search.fit(x_train, y_train)
 
 
-def preprocess_symptoms(symptoms):
-    return ' '.join(symptoms.strip().lower().split())
+# best_pipeline = grid_search.best_estimator_
 
 
-def predict_condition(symptoms, top_n=1):
-    preprocessed_symptoms = preprocess_symptoms(symptoms)
-    probabilities = best_pipeline.predict_proba([preprocessed_symptoms])[0]
-    classes = best_pipeline.classes_
-    sorted_indices = probabilities.argsort()[::-1]
-    top_classes = classes[sorted_indices][:top_n]
-    top_probabilities = probabilities[sorted_indices][:top_n]
-    return list(zip(top_classes, top_probabilities))
+# y_pred_train = best_pipeline.predict(x_train)
+# y_pred_test = best_pipeline.predict(x_test)
+
+# print(f"Training accuracy: {accuracy_score(y_train, y_pred_train)}")
+# print(f"Testing accuracy: {accuracy_score(y_test, y_pred_test)}")
 
 
-@app.route('/predict', methods=['POST'])
-def predict():
+# def preprocess_symptoms(symptoms):
+#     return ' '.join(symptoms.strip().lower().split())
 
-    data = request.json
+
+# def predict_condition(symptoms, top_n=1):
+#     preprocessed_symptoms = preprocess_symptoms(symptoms)
+#     probabilities = best_pipeline.predict_proba([preprocessed_symptoms])[0]
+#     classes = best_pipeline.classes_
+#     sorted_indices = probabilities.argsort()[::-1]
+#     top_classes = classes[sorted_indices][:top_n]
+#     top_probabilities = probabilities[sorted_indices][:top_n]
+#     return list(zip(top_classes, top_probabilities))
+
+
+# @app.route('/predict', methods=['POST'])
+# def predict():
+
+#     data = request.json
     
-    if not data or 'symptoms' not in data:
-        return jsonify({'error': 'Invalid request'}), 400
+#     if not data or 'symptoms' not in data:
+#         return jsonify({'error': 'Invalid request'}), 400
 
-    symptoms = data['symptoms']
-    predictions = predict_condition(symptoms, top_n=2)
-    return jsonify(predictions)
+#     symptoms = data['symptoms']
+#     predictions = predict_condition(symptoms, top_n=2)
+#     return jsonify(predictions)
 
-if __name__ == '__main__':
-    app.run(debug=True,host='0.0.0.0',port=8080)
+# if __name__ == '__main__':
+#     app.run(debug=True,host='0.0.0.0',port=8080)
+from spellchecker import SpellChecker
+
+# Initialize spell checker
+spell = SpellChecker()
+
+# Correct a single word
+misspelled_word = "speling"
+corrected_word = spell.correction(misspelled_word)
+print("Corrected:", corrected_word)
+
+# Correct multiple words in a sentence
+sentence = "Ths is a sentence with some misspelled wrds."
+corrected_sentence = ' '.join([spell.correction(word) for word in sentence.split()])
+print("Corrected Sentence:", corrected_sentence)
